@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+
 namespace HelloWorld
 {
     public class HelloWorldPlayer : NetworkBehaviour
@@ -10,11 +11,12 @@ namespace HelloWorld
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
         public NetworkVariable<Color> colorPlayer = new NetworkVariable<Color>();
         public static List<Color> coloresGuardados= new List<Color>();
+
+        //public static List<int> equipo1 = new List<int>();
         
         private Renderer enlace;
 
-        public void Start()
-            {
+        public void Start(){
             Position.OnValueChanged += OnPositionChange;
             colorPlayer.OnValueChanged += OnColorChange;
             enlace= GetComponent<Renderer>();
@@ -24,9 +26,11 @@ namespace HelloWorld
                 coloresGuardados.Add(Color.red);
                 coloresGuardados.Add(Color.white);
             }
-            }
-
-            public void OnPositionChange(Vector3 previousValue, Vector3 newValue){
+            /*if(IsServer && IsOwner){
+                equipo1.Add(0);
+            }*/
+        }
+        public void OnPositionChange(Vector3 previousValue, Vector3 newValue){
             transform.position=Position.Value;
         }
         public void OnColorChange(Color previousValue, Color newValue){
@@ -39,23 +43,29 @@ namespace HelloWorld
                 MovePlayerSinEquipo();
             }
         }
-
         public void MovePlayerEquipo1()
         {
+  
             SubmitPosicionEquipo1RequestServerRpc();
             SubmitColorEquipo1RequestServerRpc();
         }
         public void MovePlayerEquipo2()
         {
-                SubmitPosicionEquipo2RequestServerRpc();
-                SubmitColorEquipo2RequestServerRpc();
+            SubmitPosicionEquipo2RequestServerRpc();
+            SubmitColorEquipo2RequestServerRpc();
         }
         public void MovePlayerSinEquipo()
         {
-                SubmitPositionSinEquipoRequestServerRpc();
-                SubmitColorSinEquipoRequestServerRpc();
+            SubmitPositionSinEquipoRequestServerRpc();
+            SubmitColorSinEquipoRequestServerRpc();
         }
-
+        /*
+        public void Equipo1(int numero){
+            if(equipo1.Count< 2){
+                
+            }
+        }
+        */
         [ServerRpc]
         void SubmitColorSinEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
         {
