@@ -46,7 +46,7 @@ namespace HelloWorld
         
         static void SubmitEquipo1()
         {
-            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Equipo1" : "Request Position Change"))
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Equipo1" : "Equipo1"))
             {
                 var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                 var player = playerObject.GetComponent<HelloWorldPlayer>();
@@ -55,7 +55,7 @@ namespace HelloWorld
         }
         static void SubmitEquipo2()
         {
-            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Equipo2" : "Request Position Change"))
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Equipo2" : "Equipo2"))
             {
                 var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                 var player = playerObject.GetComponent<HelloWorldPlayer>();
@@ -64,7 +64,7 @@ namespace HelloWorld
         }
         static void SubmitSinEquipo()
         {
-            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "SinEquipo" : "Request Position Change"))
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "SinEquipo" : "SinEquipo"))
             {
                 var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
                 var player = playerObject.GetComponent<HelloWorldPlayer>();
