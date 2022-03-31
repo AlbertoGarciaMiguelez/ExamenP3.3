@@ -17,7 +17,10 @@ namespace HelloWorld
             {
                 StatusLabels();
 
-                SubmitNewPosition();
+                
+                SubmitEquipo1();
+                SubmitEquipo2();
+                SubmitSinEquipo();
             }
 
             GUILayout.EndArea();
@@ -40,21 +43,32 @@ namespace HelloWorld
             GUILayout.Label("Mode: " + mode);
         }
 
-static void SubmitNewPosition()
+        
+        static void SubmitEquipo1()
         {
-            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Move" : "Request Position Change"))
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Equipo1" : "Request Position Change"))
             {
-                if (NetworkManager.Singleton.IsServer && !NetworkManager.Singleton.IsClient )
-                {
-                    foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
-                        NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).GetComponent<HelloWorldPlayer>().Move();
-                }
-                else
-                {
-                    var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
-                    var player = playerObject.GetComponent<HelloWorldPlayer>();
-                    player.Move();
-                }
+                var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
+                var player = playerObject.GetComponent<HelloWorldPlayer>();
+                player.MovePlayerEquipo1();
+            }
+        }
+        static void SubmitEquipo2()
+        {
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "Equipo2" : "Request Position Change"))
+            {
+                var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
+                var player = playerObject.GetComponent<HelloWorldPlayer>();
+                player.MovePlayerEquipo2();
+            }
+        }
+        static void SubmitSinEquipo()
+        {
+            if (GUILayout.Button(NetworkManager.Singleton.IsServer ? "SinEquipo" : "Request Position Change"))
+            {
+                var playerObject = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
+                var player = playerObject.GetComponent<HelloWorldPlayer>();
+                player.MovePlayerSinEquipo();
             }
         }
     }
