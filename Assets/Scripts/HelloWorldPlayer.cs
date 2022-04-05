@@ -10,7 +10,11 @@ namespace HelloWorld
     {
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
         public NetworkVariable<Color> colorPlayer = new NetworkVariable<Color>();
+        public NetworkVariable<int> Equipo = new NetworkVariable<int>();
+        public static NetworkList<int> campeones= new NetworkList<int>();
         public static List<Color> coloresGuardados= new List<Color>();
+        
+        int numeroMaximo=3;
 
         //public static List<int> equipo1 = new List<int>();
         
@@ -26,9 +30,11 @@ namespace HelloWorld
                 coloresGuardados.Add(Color.red);
                 coloresGuardados.Add(Color.white);
             }
-            /*if(IsServer && IsOwner){
-                equipo1.Add(0);
-            }*/
+            if(IsServer && IsOwner){
+                campeones.Add(0);
+                campeones.Add(0);
+                campeones.Add(0);
+            }
         }
         public void OnPositionChange(Vector3 previousValue, Vector3 newValue){
             transform.position=Position.Value;
@@ -40,79 +46,129 @@ namespace HelloWorld
         {
             if (IsOwner)
             {
-                MovePlayerSinEquipo();
+                PlayerEquipoSpawn(2);
+                Equipo.Value=-1;
             }
         }
-        public void MovePlayerEquipo1()
+        public void PlayerEquipoSpawn(int x)
         {
-  
-            SubmitPosicionEquipo1RequestServerRpc();
-            SubmitColorEquipo1RequestServerRpc();
+            SubmitLlenarEquipoRequestServerRpc(x);
+            SubmitPositionEquipoRequestServerRpc(x);
+            SubmitColorEquipoRequestServerRpc(x);
         }
-        public void MovePlayerEquipo2()
+        public void PlayerEquipo(int x)
         {
-            SubmitPosicionEquipo2RequestServerRpc();
-            SubmitColorEquipo2RequestServerRpc();
-        }
-        public void MovePlayerSinEquipo()
-        {
-            SubmitPositionSinEquipoRequestServerRpc();
-            SubmitColorSinEquipoRequestServerRpc();
-        }
-        /*
-        public void Equipo1(int numero){
-            if(equipo1.Count< 2){
-                
+            if(x==0){
+                SubmitEquipo1(x);
+            }else if(x==1){
+                SubmitEquipo2(x);
+            }else{
+                SubmitLlenarEquipoRequestServerRpc(x);
+                SubmitPositionEquipoRequestServerRpc(x);
+                SubmitColorEquipoRequestServerRpc(x);
             }
         }
-        */
-        [ServerRpc]
-        void SubmitColorSinEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Color newColor =coloresGuardados[2];
-            colorPlayer.Value=newColor;
+        public void SubmitEquipo1(int x){
+            Debug.Log("Llamada");
+            if (campeones[1] < numeroMaximo)
+            {
+
+                Debug.Log("Se llama equipo"+x);
+                SubmitExpulsarEquipoRequestServerRpc();
+                SubmitPositionEquipoRequestServerRpc(x);
+                SubmitColorEquipoRequestServerRpc(x);
+                SubmitEquipoRequestServerRpc(x);
+                SubmitLlenarEquipoRequestServerRpc(x);
+            }
+            else
+            {
+                Debug.Log("Lleno equipo1");
+            }
+        }
+        public void SubmitEquipo2(int x){
+            if (campeones[2] < numeroMaximo)
+            {
+                SubmitExpulsarEquipoRequestServerRpc();
+                SubmitPositionEquipoRequestServerRpc(x);
+                SubmitColorEquipoRequestServerRpc(x);
+                SubmitEquipoRequestServerRpc(x);
+                SubmitLlenarEquipoRequestServerRpc(x);
+            }
+            else
+            {
+                Debug.Log("Lleno equipo2");
+            }
         }
         [ServerRpc]
-        void SubmitPositionSinEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
+        void SubmitEquipoRequestServerRpc(int x, ServerRpcParams rpcParams = default)
         {
-            Position.Value = GetRandomPositionSinEquipoOnPlane();
+            Equipo.Value = x;
         }
-        static Vector3 GetRandomPositionSinEquipoOnPlane()
+        [ServerRpc]
+        void SubmitExpulsarEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            return new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-3f, 3f));
+            if (Equipo.Value == 0)
+            {
+                campeones[0]--;
+            }else if (Equipo.Value == 1)
+            {
+                campeones[1]--;
+            }else
+            {
+                campeones[2]--;
+            }
+        }
+        [ServerRpc]
+        void SubmitLlenarEquipoRequestServerRpc(int x,ServerRpcParams rpcParams = default)
+        {
+            if (x == 0)
+            {
+                campeones[0]++;
+            }else if (x == 1)
+            {
+                campeones[1]++;
+            }else
+            {
+                campeones[2]++;
+            }
+        }
+        [ServerRpc]
+        void SubmitColorEquipoRequestServerRpc(int x,ServerRpcParams rpcParams = default)
+        {
+            if(x==0){
+                Color newColor =coloresGuardados[x];
+                colorPlayer.Value=newColor;
+            }else if(x==1){
+                Color newColor =coloresGuardados[x];
+                colorPlayer.Value=newColor;
+            }else{
+                Color newColor =coloresGuardados[x];
+                colorPlayer.Value=newColor;
+            }
+        }
+        [ServerRpc]
+        void SubmitPositionEquipoRequestServerRpc(int x,ServerRpcParams rpcParams = default)
+        {
+            if(x==0){
+                Position.Value = GetRandomPositionEquipoOnPlane(x);
+            }else if(x==1){
+                Position.Value = GetRandomPositionEquipoOnPlane(x);
+            }else{
+                Position.Value = GetRandomPositionEquipoOnPlane(x);
+            }
             
         }
-        [ServerRpc]
-        void SubmitColorEquipo1RequestServerRpc(ServerRpcParams rpcParams = default)
+        static Vector3 GetRandomPositionEquipoOnPlane(int x)
         {
-            Color newColor =coloresGuardados[0];
-            colorPlayer.Value=newColor;
+            if(x==0){
+                return new Vector3(Random.Range(-4f, -2f), 1f, Random.Range(-3f, 3f));
+            }else if(x==1){
+                return new Vector3(Random.Range(4f, 2f), 1f, Random.Range(-3f, 3f));
+            }else{
+                return new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-3f, 3f));
+            }
         }
-        [ServerRpc]
-        void SubmitPosicionEquipo1RequestServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Position.Value = GetRandomPositionEquipo1OnPlane();
-        }
-        static Vector3 GetRandomPositionEquipo1OnPlane()
-        {
-            return new Vector3(Random.Range(-4f, -2f), 1f, Random.Range(-3f, 3f));
-        }
-        [ServerRpc]
-        void SubmitColorEquipo2RequestServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Color newColor =coloresGuardados[1];
-            colorPlayer.Value=newColor;
-        }
-        [ServerRpc]
-        void SubmitPosicionEquipo2RequestServerRpc(ServerRpcParams rpcParams = default)
-        {
-            Position.Value = GetRandomPositionEquipo2OnPlane();
-        }
-        static Vector3 GetRandomPositionEquipo2OnPlane()
-        {
-            return new Vector3(Random.Range(4f, 2f), 1f, Random.Range(-3f, 3f));
-        }
-
+        
         void Update()
         {
             transform.position = Position.Value;
