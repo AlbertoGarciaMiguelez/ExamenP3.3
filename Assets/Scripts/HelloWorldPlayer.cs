@@ -10,11 +10,11 @@ namespace HelloWorld
     {
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
         public NetworkVariable<Color> colorPlayer = new NetworkVariable<Color>();
-        public NetworkVariable<int> Equipo = new NetworkVariable<int>();
-        public static NetworkList<int> campeones= new NetworkList<int>();
+        public NetworkVariable<int> NumeroEquipo = new NetworkVariable<int>();
         public static List<Color> coloresGuardados= new List<Color>();
+        public static List<int> ListaEquipo= new List<int>();
         
-        int numeroMaximo=3;
+        public static int numeroMaximo=2;
 
         //public static List<int> equipo1 = new List<int>();
         
@@ -25,16 +25,6 @@ namespace HelloWorld
             colorPlayer.OnValueChanged += OnColorChange;
             enlace= GetComponent<Renderer>();
             // Por si en el futuro hay mas equipos
-            if(IsServer && IsOwner){
-                coloresGuardados.Add(Color.blue);
-                coloresGuardados.Add(Color.red);
-                coloresGuardados.Add(Color.white);
-            }
-            if(IsServer && IsOwner){
-                campeones.Add(0);
-                campeones.Add(0);
-                campeones.Add(0);
-            }
         }
         public void OnPositionChange(Vector3 previousValue, Vector3 newValue){
             transform.position=Position.Value;
@@ -44,128 +34,113 @@ namespace HelloWorld
         }
         public override void OnNetworkSpawn()
         {
+            if(IsServer && IsOwner){
+                ListaEquipo.Add(0);
+                ListaEquipo.Add(0);
+                ListaEquipo.Add(0);
+                coloresGuardados.Add(Color.white);
+                coloresGuardados.Add(Color.blue);
+                coloresGuardados.Add(Color.red);
+            }
             if (IsOwner)
             {
-                PlayerEquipoSpawn(2);
-                Equipo.Value=-1;
+                PlayerEquipo(0);
             }
         }
-        public void PlayerEquipoSpawn(int x)
+        public void PlayerEquipo(int NumeroEquipox)
         {
-            SubmitLlenarEquipoRequestServerRpc(x);
-            SubmitPositionEquipoRequestServerRpc(x);
-            SubmitColorEquipoRequestServerRpc(x);
-        }
-        public void PlayerEquipo(int x)
-        {
-            if(x==0){
-                SubmitEquipo1(x);
-            }else if(x==1){
-                SubmitEquipo2(x);
+            Debug.Log("Primera "+ListaEquipo[0]);
+            Debug.Log("Segunda "+ListaEquipo[1]);
+            Debug.Log("Tercera "+ListaEquipo[2]);
+            if(NumeroEquipox==-1){
+                SubmitEquipoRequestServerRpc(0);
+                SubmitPositionEquipoRequestServerRpc();
+                SubmitColorEquipoRequestServerRpc();
+                SubmitLlenarEquipoRequestServerRpc();
+            }
+            else if(ListaEquipo[NumeroEquipox]< numeroMaximo || NumeroEquipox== 0){
+                
+                SubmitExpulsarEquipoRequestServerRpc();
+                Debug.Log("Se llama equipo "+NumeroEquipo.Value);
+                SubmitEquipoRequestServerRpc(NumeroEquipox);
+                Debug.Log("Se llama equipo "+NumeroEquipo.Value);
+                SubmitPositionEquipoRequestServerRpc();
+                SubmitColorEquipoRequestServerRpc();
+                SubmitLlenarEquipoRequestServerRpc();
+                Debug.Log("Primera "+ListaEquipo[0]);
+                Debug.Log("Segunda "+ListaEquipo[1]);
+                Debug.Log("Tercera "+ListaEquipo[2]);
             }else{
-                SubmitLlenarEquipoRequestServerRpc(x);
-                SubmitPositionEquipoRequestServerRpc(x);
-                SubmitColorEquipoRequestServerRpc(x);
-            }
-        }
-        public void SubmitEquipo1(int x){
-            Debug.Log("Llamada");
-            if (campeones[1] < numeroMaximo)
-            {
-
-                Debug.Log("Se llama equipo"+x);
-                SubmitExpulsarEquipoRequestServerRpc();
-                SubmitPositionEquipoRequestServerRpc(x);
-                SubmitColorEquipoRequestServerRpc(x);
-                SubmitEquipoRequestServerRpc(x);
-                SubmitLlenarEquipoRequestServerRpc(x);
-            }
-            else
-            {
-                Debug.Log("Lleno equipo1");
-            }
-        }
-        public void SubmitEquipo2(int x){
-            if (campeones[2] < numeroMaximo)
-            {
-                SubmitExpulsarEquipoRequestServerRpc();
-                SubmitPositionEquipoRequestServerRpc(x);
-                SubmitColorEquipoRequestServerRpc(x);
-                SubmitEquipoRequestServerRpc(x);
-                SubmitLlenarEquipoRequestServerRpc(x);
-            }
-            else
-            {
-                Debug.Log("Lleno equipo2");
+                Debug.Log("Equipo "+ NumeroEquipox + "lleno");
             }
         }
         [ServerRpc]
         void SubmitEquipoRequestServerRpc(int x, ServerRpcParams rpcParams = default)
         {
-            Equipo.Value = x;
+            NumeroEquipo.Value = x;
         }
         [ServerRpc]
         void SubmitExpulsarEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            if (Equipo.Value == 0)
+            if (NumeroEquipo.Value == 0)
             {
-                campeones[0]--;
-            }else if (Equipo.Value == 1)
+                ListaEquipo[0]--;
+            }else if (NumeroEquipo.Value == 1)
             {
-                campeones[1]--;
+                ListaEquipo[1]--;
             }else
             {
-                campeones[2]--;
+                ListaEquipo[2]--;
             }
         }
         [ServerRpc]
-        void SubmitLlenarEquipoRequestServerRpc(int x,ServerRpcParams rpcParams = default)
+        void SubmitLlenarEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            if (x == 0)
+            if (NumeroEquipo.Value == 0)
             {
-                campeones[0]++;
-            }else if (x == 1)
+                ListaEquipo[0]++;
+            }else if (NumeroEquipo.Value == 1)
             {
-                campeones[1]++;
+                ListaEquipo[1]++;
             }else
             {
-                campeones[2]++;
+                ListaEquipo[2]++;
             }
         }
         [ServerRpc]
-        void SubmitColorEquipoRequestServerRpc(int x,ServerRpcParams rpcParams = default)
+        void SubmitColorEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            if(x==0){
-                Color newColor =coloresGuardados[x];
+            if(NumeroEquipo.Value==0){
+                Color newColor =coloresGuardados[0];
                 colorPlayer.Value=newColor;
-            }else if(x==1){
-                Color newColor =coloresGuardados[x];
+            }else if(NumeroEquipo.Value==1){
+                Color newColor =coloresGuardados[1];
                 colorPlayer.Value=newColor;
             }else{
-                Color newColor =coloresGuardados[x];
+                Color newColor =coloresGuardados[2];
                 colorPlayer.Value=newColor;
             }
         }
         [ServerRpc]
-        void SubmitPositionEquipoRequestServerRpc(int x,ServerRpcParams rpcParams = default)
+        void SubmitPositionEquipoRequestServerRpc(ServerRpcParams rpcParams = default)
         {
-            if(x==0){
-                Position.Value = GetRandomPositionEquipoOnPlane(x);
-            }else if(x==1){
-                Position.Value = GetRandomPositionEquipoOnPlane(x);
+            if(NumeroEquipo.Value==0){
+                Position.Value = GetRandomPositionEquipoOnPlane(0);
+            }else if(NumeroEquipo.Value==1){
+                Position.Value = GetRandomPositionEquipoOnPlane(1);
             }else{
-                Position.Value = GetRandomPositionEquipoOnPlane(x);
+                Position.Value = GetRandomPositionEquipoOnPlane(2);
             }
             
         }
         static Vector3 GetRandomPositionEquipoOnPlane(int x)
         {
             if(x==0){
-                return new Vector3(Random.Range(-4f, -2f), 1f, Random.Range(-3f, 3f));
-            }else if(x==1){
-                return new Vector3(Random.Range(4f, 2f), 1f, Random.Range(-3f, 3f));
-            }else{
                 return new Vector3(Random.Range(-1f, 1f), 1f, Random.Range(-3f, 3f));
+            }else if(x==1){
+                return new Vector3(Random.Range(-4f, -2f), 1f, Random.Range(-3f, 3f));
+            }else{
+                return new Vector3(Random.Range(4f, 2f), 1f, Random.Range(-3f, 3f));
             }
         }
         
